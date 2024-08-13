@@ -63,10 +63,17 @@ steps:
   - |
     zip -r my-application.zip . -x "*.git*"
 
+# saves logs
+- name: 'gcr.io/cloud-builders/gcloud'
+  args: ['builds', 'submit', '.']
+
+logsBucket: gs://group-6-bucket
+
+
 # Upload artifacts
 artifacts:
   objects:
-    location: 'gs://your-bucket/build-artifacts/'
+    location: 'gs://group-6-bucket/build-artifacts/'
     paths: ['**/my-application.zip', 'coverage/**', 'junit/report.xml']
 
 timeout: '1200s'
