@@ -76,4 +76,34 @@ artifacts:
     location: 'gs://group-6-bucket/build-artifacts/'
     paths: ['**/my-application.zip', 'coverage/**', 'junit/report.xml']
 
+# PUSHING TO APP ENGINE
+steps:
+  # Install PHP dependencies with Composer
+  - name: 'gcr.io/cloud-builders/composer'
+    args: ['install']
+    
+  # Run PHP unit tests
+  - name: 'gcr.io/cloud-builders/php'
+    entrypoint: 'phpunit'
+    args: ['--configuration', 'phpunit.xml']
+    
+  # Run JavaScript tests (if applicable)
+  - name: 'node:14'
+    entrypoint: 'bash'
+    args: ['-c', 'npm install && npm test']
+    
+  # Deploy to Google App Engine
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    args: ['app', 'deploy', '--quiet']
+
+# Artifacts (optional) for storing build outputs
+artifacts:
+  objects:
+    location: 'gs://your-bucket-name/artifacts/'
+    paths: ['**']
+
+# Timeout setting (optional)
 timeout: '1200s'
+
+
+
