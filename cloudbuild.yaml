@@ -77,3 +77,45 @@ artifacts:
     paths: ['**/my-application.zip', 'coverage/**', 'junit/report.xml']
 
 timeout: '1200s'
+
+# manual pull request
+name: CD Pipeline
+
+on:
+  pull_request:
+    branches:
+      - development
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Run tests
+      run: |
+        # Run your tests here
+        echo "Running tests..."
+
+    - name: Manual Approval
+      if: github.event.pull_request.merged == false
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const { Octokit } = require("@octokit/core");
+          const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+
+          // Require manual approval to proceed
+          const approve = await octokit.request('POST /repos/{owner}/{repo}/pulls/{pull_number}/reviews', {
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.payload.pull_request.number,
+            event: 'APPROVE'
+          });
+
+          if (approve.status !== 200) {
+            throw new Error("Approval required");
+          }
+
